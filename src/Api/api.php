@@ -2,8 +2,10 @@
 
 namespace Trustly\Api;
 
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 
@@ -363,18 +365,8 @@ abstract class Trustly_Api implements GuzzleRequestInterface
             }
 
             throw new Trustly_ConnectionException($error);
-        } catch (RequestException $e) {
-            $ssl_result = $e->getStatusCode();
-            if ($ssl_result !== 0) {
-                $ssl_error_str = null;
-                if (isset($this->curl_x509_errors[$ssl_result])) {
-                    $ssl_error_str = $this->curl_x509_errors[$ssl_result];
-                }
-
-                $error = 'Failed to connect to the Trusly API. SSL Verification error #' .
-                    $ssl_result . ($ssl_error_str?': ' . $ssl_error_str:'');
-                throw new Trustly_ConnectionException($error);
-            }
+        } catch (Exception $e) {
+            throw $e;
         }
 
         $body = (string) $response->getBody()->getContents();
